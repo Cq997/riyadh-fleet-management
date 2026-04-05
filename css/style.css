@@ -1,34 +1,120 @@
+/* الخط */
 body {
   font-family: 'Cairo', sans-serif;
   margin: 0;
+  background: linear-gradient(135deg, #0b1e2d, #112f45);
+  color: white;
 }
 
+/* ===== صفحة تسجيل الدخول ===== */
+
 .login-page {
-  background: #0b1e2d;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
 
+/* صندوق الدخول */
 .login-box {
-  background: #122b40;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
   padding: 40px;
-  border-radius: 12px;
-  width: 300px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 350px;
   text-align: center;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
 }
 
+.login-box h2 {
+  margin-bottom: 20px;
+}
+
+/* الحقول */
 input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+  outline: none;
 }
 
+/* زر الدخول */
 button {
-  background: red;
+  background: linear-gradient(45deg, #ff3b3b, #ff6b6b);
   color: white;
-  padding: 10px;
+  padding: 12px;
   border: none;
   width: 100%;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+/* ===== النظام ===== */
+
+.sidebar {
+  width: 220px;
+  position: fixed;
+  height: 100%;
+  background: #091520;
+  padding: 20px;
+}
+
+.sidebar a {
+  display: block;
+  margin: 10px 0;
+  color: white;
+  text-decoration: none;
+}
+
+/* المحتوى */
+.main {
+  margin-right: 240px;
+  padding: 20px;
+}
+
+/* الكروت */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #122b40;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 10px;
+  flex: 1;
+  min-width: 150px;
+}
+
+/* ===== الموبايل 🔥 ===== */
+
+@media (max-width: 768px) {
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .main {
+    margin-right: 0;
+  }
+
+  .cards {
+    flex-direction: column;
+  }
+
+  .login-box {
+    width: 95%;
+  }
 }
