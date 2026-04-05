@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة القائد</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<script>
+if (!localStorage.getItem("auth")) {
+  window.location.href = "index.html";
+}
+</script>
+
+<div class="sidebar">
+  <h3>🚑 أسطول الرياض</h3>
+  <a href="dashboard.html">الرئيسية</a>
+  <a href="app.html">النظام</a>
+</div>
+
+<div class="main">
+
+  <h1>📊 لوحة القائد</h1>
+
+  <div class="cards">
+    <div class="card">🚑 المركبات: <span id="fleet"></span></div>
+    <div class="card">🟢 جاهزة: <span id="ready"></span></div>
+    <div class="card">🔧 صيانة: <span id="maintenance"></span></div>
+    <div class="card">🚨 حوادث: <span id="accidents"></span></div>
+  </div>
+
+  <canvas id="chart"></canvas>
+
+</div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>
