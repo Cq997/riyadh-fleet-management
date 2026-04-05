@@ -118,3 +118,42 @@ button:hover {
     width: 95%;
   }
 }
+/* ===== الموبايل 🔥 ===== */
+
+@media (max-width: 768px) {
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .main {
+    margin-right: 0;
+  }
+
+  .cards {
+    flex-direction: column;
+  }
+
+  .login-box {
+    width: 95%;
+  }
+}
+
+/* ===== حجم الرسم البياني ===== */
+
+.chart-container {
+  width: 300px;
+  height: 300px;
+  margin: auto;
+}
+
+/* 📱 تحسين للجوال */
+
+@media (max-width: 768px) {
+  .chart-container {
+    width: 90%;
+    height: 250px;
+  }
+}
