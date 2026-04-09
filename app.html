@@ -18,7 +18,21 @@
   <a href="#">الحوادث</a>
   <a href="#">الدعم اللوجستي</a>
 </div>
+  
+<h3>اختيار المركبة</h3>
 
+<input type="text" placeholder="بحث برقم أو حرف" onkeyup="بحث_مركبة(this.value)">
+
+<select id="قائمة_المركبات" onchange="تعبئة_المركبة()"></select>
+
+<input id="رقم_اللوحة" placeholder="رقم اللوحة">
+<input id="الحروف" placeholder="الحروف">
+<input id="النوع" placeholder="النوع">
+<input id="الموديل" placeholder="الموديل">
+<input id="الشاصي" placeholder="رقم الشاصي">
+<input id="العداد" placeholder="العداد">
+
+  
 <div class="main">
   <h1>📋 إدارة العمليات</h1>
 
