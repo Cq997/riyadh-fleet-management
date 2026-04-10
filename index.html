@@ -19,27 +19,54 @@
   <button onclick="login()">دخول</button>
 </div>
 
+<script src="config.js"></script>
+
 <script>
 
+// 🧠 تخزين المستخدمين
+let المستخدمين = [];
+
+// 🔄 تحميل المستخدمين من الشيت (JSONP)
+function تحميل_المستخدمين() {
+  const s = document.createElement("script");
+  s.src = API_URL + "?callback=استلام_المستخدمين";
+  document.body.appendChild(s);
+}
+
+// 📥 استلام البيانات
+function استلام_المستخدمين(data) {
+  المستخدمين = data.users || [];
+}
+
+// 🔐 تسجيل الدخول
 function login() {
 
   const u = document.getElementById("username").value.trim();
   const p = document.getElementById("password").value.trim();
 
-  if (u === "admin" && p === "1234") {
-    localStorage.setItem("role", "admin");
-    location.href = "dashboard.html";
-  }
+  // البحث في الشيت
+  let user = المستخدمين.find(x => x[0] == u && x[1] == p);
 
-  else if (u === "operator" && p === "1111") {
-    localStorage.setItem("role", "operator");
-    location.href = "app.html";
-  }
+  if (user) {
 
-  else {
-    alert("❌ بيانات غير صحيحة");
+    // حفظ البيانات
+    localStorage.setItem("role", user[2]);
+    localStorage.setItem("user", u);
+
+    // تحويل حسب الصلاحية
+    if (user[2] === "admin") {
+      location.href = "dashboard.html";
+    } else {
+      location.href = "app.html";
+    }
+
+  } else {
+    alert("❌ اسم المستخدم أو كلمة المرور غير صحيحة");
   }
 }
+
+// 🚀 تشغيل أولي
+window.onload = تحميل_المستخدمين;
 
 </script>
 
