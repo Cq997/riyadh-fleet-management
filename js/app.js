@@ -11,8 +11,10 @@ let بيانات_الزيت = [];
 async function تحميل_البيانات() {
 
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL + "?t=" + new Date().getTime());
     const data = await res.json();
+
+    console.log("البيانات:", data);
 
     بيانات_المركبات = data.fleet || [];
     بيانات_الزيت = data.oil || [];
