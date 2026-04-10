@@ -10,66 +10,75 @@
 
 <body>
 
+<!-- 🧭 القائمة -->
 <div class="sidebar">
   <h3>🚑 النظام</h3>
   <a href="dashboard.html">📊 لوحة القائد</a>
   <button onclick="logout()">تسجيل خروج</button>
 </div>
 
+<!-- 🧑‍✈️ المحتوى -->
 <div class="main">
 
 <h1>🚑 تشغيل الأسطول</h1>
 
-<input type="text" placeholder="بحث" onkeyup="بحث_مركبة(this.value)">
+<!-- 🔍 بحث -->
+<input type="text" placeholder="بحث برقم أو حرف" onkeyup="بحث_مركبة(this.value)">
+
+<!-- 🚑 اختيار -->
 <select id="قائمة_المركبات" onchange="تعبئة_المركبة()"></select>
 
 <hr>
 
-<input id="رقم_اللوحة">
-<input id="الحروف">
-<input id="النوع">
-<input id="الموديل">
-<input id="الشاصي">
-<input id="العداد">
-<input id="آخر_تغيير_زيت" readonly>
+<!-- 📋 بيانات المركبة -->
+<input id="رقم_اللوحة" placeholder="رقم اللوحة">
+<input id="الحروف" placeholder="الحروف">
+<input id="النوع" placeholder="النوع">
+<input id="الموديل" placeholder="الموديل">
+<input id="الشاصي" placeholder="رقم الشاصي">
+<input id="العداد" placeholder="العداد">
+<input id="آخر_تغيير_زيت" placeholder="آخر تغيير زيت" readonly>
 
 <hr>
 
+<!-- 🛠️ صيانة -->
 <h3>إضافة صيانة</h3>
-<input id="رقم_المركبة_صيانة">
-<input id="نوع_الصيانة">
+<input id="رقم_المركبة_صيانة" placeholder="رقم المركبة">
+<input id="نوع_الصيانة" placeholder="نوع الصيانة">
 
-<button onclick="حفظ_صيانة()">حفظ</button>
+<button onclick="حفظ_صيانة()">💾 حفظ</button>
 
 </div>
 
+<!-- 🔌 الربط -->
 <script src="config.js"></script>
 
 <script>
 
-// 🔐 حماية
+// 🔐 حماية (تم التعديل)
 if (localStorage.getItem("role") !== "operator") {
   location.href = "index.html";
 }
 
-// 🔌 بيانات
+// 🧠 متغيرات
 let بيانات_المركبات = [];
 let بيانات_الزيت = [];
 
-// تحميل JSONP
+// 🔄 تحميل البيانات (JSONP)
 function تحميل_البيانات() {
   const s = document.createElement("script");
   s.src = API_URL + "?callback=استلام";
   document.body.appendChild(s);
 }
 
+// 📥 استلام البيانات
 function استلام(data) {
   بيانات_المركبات = data.fleet || [];
   بيانات_الزيت = data.oil || [];
   تحميل_القائمة();
 }
 
-// قائمة
+// 📋 قائمة المركبات
 function تحميل_القائمة() {
   let list = document.getElementById("قائمة_المركبات");
   list.innerHTML = "";
@@ -82,7 +91,7 @@ function تحميل_القائمة() {
   });
 }
 
-// تعبئة
+// 🚑 تعبئة البيانات
 function تعبئة_المركبة() {
   let id = document.getElementById("قائمة_المركبات").value;
   let m = بيانات_المركبات.find(x => x[0] == id);
@@ -95,9 +104,15 @@ function تعبئة_المركبة() {
   document.getElementById("الموديل").value = m[4];
   document.getElementById("الشاصي").value = m[5];
   document.getElementById("العداد").value = m[6];
+
+  // ⛽ آخر تغيير زيت
+  let z = بيانات_الزيت.find(o => o[0] == id);
+  if (z) {
+    document.getElementById("آخر_تغيير_زيت").value = z[1];
+  }
 }
 
-// بحث
+// 🔍 بحث
 function بحث_مركبة(v) {
   let list = document.getElementById("قائمة_المركبات");
   list.innerHTML = "";
@@ -112,7 +127,7 @@ function بحث_مركبة(v) {
   });
 }
 
-// حفظ صيانة
+// 💾 حفظ صيانة
 function حفظ_صيانة() {
 
   fetch(API_URL, {
@@ -121,21 +136,22 @@ function حفظ_صيانة() {
       sheet: "الصيانة",
       values: [
         document.getElementById("رقم_المركبة_صيانة").value,
-        new Date(),
+        new Date().toLocaleString(),
         document.getElementById("نوع_الصيانة").value
       ]
     })
   });
 
-  alert("تم الحفظ");
+  alert("✅ تم حفظ الصيانة");
 }
 
-// خروج
+// 🚪 تسجيل خروج (تم التعديل)
 function logout() {
   localStorage.clear();
-  location.href = "login.html";
+  location.href = "index.html";
 }
 
+// 🚀 تشغيل
 window.onload = تحميل_البيانات;
 
 </script>
