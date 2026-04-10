@@ -1,62 +1,144 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-
-  <!-- 📱 التوافق -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- 🎨 الخط -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
-
-  <title>تشغيل الأسطول - الرياض</title>
-
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+<title>تشغيل الأسطول</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<!-- 🧭 القائمة -->
 <div class="sidebar">
   <h3>🚑 النظام</h3>
   <a href="dashboard.html">📊 لوحة القائد</a>
-  <a href="#">🚑 الأسطول</a>
-  <a href="#">🛠️ الصيانة</a>
-  <a href="#">🚨 الحوادث</a>
-  <a href="#">📦 الدعم اللوجستي</a>
+  <button onclick="logout()">تسجيل خروج</button>
 </div>
 
-<!-- 🧑‍✈️ المحتوى -->
 <div class="main">
 
-  <h1>🚑 تشغيل الأسطول</h1>
+<h1>🚑 تشغيل الأسطول</h1>
 
-  <!-- 🔍 البحث -->
-  <input type="text" placeholder="بحث برقم أو حرف" onkeyup="بحث_مركبة(this.value)">
+<input type="text" placeholder="بحث" onkeyup="بحث_مركبة(this.value)">
+<select id="قائمة_المركبات" onchange="تعبئة_المركبة()"></select>
 
-  <!-- 🚑 اختيار المركبة -->
-  <select id="قائمة_المركبات" onchange="تعبئة_المركبة()"></select>
+<hr>
 
-  <hr>
+<input id="رقم_اللوحة">
+<input id="الحروف">
+<input id="النوع">
+<input id="الموديل">
+<input id="الشاصي">
+<input id="العداد">
+<input id="آخر_تغيير_زيت" readonly>
 
-  <!-- 📋 بيانات المركبة -->
-  <input id="رقم_اللوحة" placeholder="رقم اللوحة">
-  <input id="الحروف" placeholder="الحروف">
-  <input id="النوع" placeholder="النوع">
-  <input id="الموديل" placeholder="الموديل">
-  <input id="الشاصي" placeholder="رقم الشاصي">
-  <input id="العداد" placeholder="العداد">
+<hr>
 
-  <!-- ⛽ الزيت -->
-  <input id="آخر_تغيير_زيت" placeholder="آخر تغيير زيت" readonly>
+<h3>إضافة صيانة</h3>
+<input id="رقم_المركبة_صيانة">
+<input id="نوع_الصيانة">
+
+<button onclick="حفظ_صيانة()">حفظ</button>
 
 </div>
 
-<!-- 🔌 الربط -->
 <script src="config.js"></script>
 
-<!-- ⚙️ النظام -->
-<script src="js/app.js"></script>
+<script>
+
+// 🔐 حماية
+if (localStorage.getItem("role") !== "operator") {
+  location.href = "login.html";
+}
+
+// 🔌 بيانات
+let بيانات_المركبات = [];
+let بيانات_الزيت = [];
+
+// تحميل JSONP
+function تحميل_البيانات() {
+  const s = document.createElement("script");
+  s.src = API_URL + "?callback=استلام";
+  document.body.appendChild(s);
+}
+
+function استلام(data) {
+  بيانات_المركبات = data.fleet || [];
+  بيانات_الزيت = data.oil || [];
+  تحميل_القائمة();
+}
+
+// قائمة
+function تحميل_القائمة() {
+  let list = document.getElementById("قائمة_المركبات");
+  list.innerHTML = "";
+
+  بيانات_المركبات.slice(1).forEach(r => {
+    let o = document.createElement("option");
+    o.value = r[0];
+    o.text = r[1] + " - " + r[3];
+    list.appendChild(o);
+  });
+}
+
+// تعبئة
+function تعبئة_المركبة() {
+  let id = document.getElementById("قائمة_المركبات").value;
+  let m = بيانات_المركبات.find(x => x[0] == id);
+
+  if (!m) return;
+
+  document.getElementById("رقم_اللوحة").value = m[1];
+  document.getElementById("الحروف").value = m[2];
+  document.getElementById("النوع").value = m[3];
+  document.getElementById("الموديل").value = m[4];
+  document.getElementById("الشاصي").value = m[5];
+  document.getElementById("العداد").value = m[6];
+}
+
+// بحث
+function بحث_مركبة(v) {
+  let list = document.getElementById("قائمة_المركبات");
+  list.innerHTML = "";
+
+  بيانات_المركبات.slice(1).forEach(r => {
+    if (r.join(" ").includes(v)) {
+      let o = document.createElement("option");
+      o.value = r[0];
+      o.text = r[1] + " - " + r[3];
+      list.appendChild(o);
+    }
+  });
+}
+
+// حفظ صيانة
+function حفظ_صيانة() {
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      sheet: "الصيانة",
+      values: [
+        document.getElementById("رقم_المركبة_صيانة").value,
+        new Date(),
+        document.getElementById("نوع_الصيانة").value
+      ]
+    })
+  });
+
+  alert("تم الحفظ");
+}
+
+// خروج
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+window.onload = تحميل_البيانات;
+
+</script>
 
 </body>
 </html>
