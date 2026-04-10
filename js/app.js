@@ -8,25 +8,23 @@ let بيانات_الزيت = [];
 // ===============================
 // 🔌 تحميل البيانات من Google Sheets
 // ===============================
-async function تحميل_البيانات() {
+function تحميل_البيانات() {
 
-  try {
-    const res = await fetch(API_URL + "?t=" + new Date().getTime());
-    const data = await res.json();
+  const script = document.createElement("script");
+  script.src = API_URL + "?callback=استلام_البيانات";
 
-    console.log("البيانات:", data);
-
-    بيانات_المركبات = data.fleet || [];
-    بيانات_الزيت = data.oil || [];
-
-    تحميل_القائمة();
-
-  } catch (error) {
-    console.error("خطأ في تحميل البيانات:", error);
-    alert("❌ فشل الاتصال بالنظام");
-  }
+  document.body.appendChild(script);
 }
 
+function استلام_البيانات(data) {
+
+  console.log("تم استلام البيانات:", data);
+
+  بيانات_المركبات = data.fleet || [];
+  بيانات_الزيت = data.oil || [];
+
+  تحميل_القائمة();
+}
 // ===============================
 // 📋 تعبئة قائمة المركبات
 // ===============================
