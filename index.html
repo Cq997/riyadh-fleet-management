@@ -23,49 +23,41 @@
 
 <script>
 
-// 🧠 تخزين المستخدمين
 let المستخدمين = [];
 
-// 🔄 تحميل المستخدمين من الشيت (JSONP)
 function تحميل_المستخدمين() {
   const s = document.createElement("script");
-  s.src = API_URL + "?callback=استلام_المستخدمين";
+  s.src = API_URL + "?callback=استلام";
   document.body.appendChild(s);
 }
 
-// 📥 استلام البيانات
-function استلام_المستخدمين(data) {
+function استلام(data) {
   المستخدمين = data.users || [];
 }
 
-// 🔐 تسجيل الدخول
 function login() {
 
   const u = document.getElementById("username").value.trim();
   const p = document.getElementById("password").value.trim();
 
-  // البحث في الشيت
   let user = المستخدمين.find(x => x[0] == u && x[1] == p);
 
   if (user) {
 
-    // حفظ البيانات
-    localStorage.setItem("role", user[2]);
+    localStorage.setItem("roles", user[2]);
     localStorage.setItem("user", u);
 
-    // تحويل حسب الصلاحية
-    if (user[2] === "admin") {
+    if (user[2].includes("مدير")) {
       location.href = "dashboard.html";
     } else {
       location.href = "app.html";
     }
 
   } else {
-    alert("❌ اسم المستخدم أو كلمة المرور غير صحيحة");
+    alert("❌ بيانات غير صحيحة");
   }
 }
 
-// 🚀 تشغيل أولي
 window.onload = تحميل_المستخدمين;
 
 </script>
