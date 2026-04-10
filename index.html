@@ -31,8 +31,9 @@ function تحميل_المستخدمين() {
   document.body.appendChild(s);
 }
 
-function استلام(data) {
+function استلام_المستخدمين(data) {
   المستخدمين = data.users || [];
+  تم_تحميل_المستخدمين = true;
 }
 
 function login() {
