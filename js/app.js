@@ -1,50 +1,143 @@
-async function loadData() {
-  const data = await getData();
+// ===============================
+// 🚑 نظام تشغيل الأسطول - الرياض
+// ===============================
 
-  let html = "<tr><th>المركبة</th><th>الحالة</th></tr>";
-
-  data.forEach(row => {
-    html += `<tr>
-      <td>${row.vehicle}</td>
-      <td>${row.status}</td>
-    </tr>`;
-  });
-
-  document.getElementById("table").innerHTML = html;
-}
 let بيانات_المركبات = [];
+let بيانات_الزيت = [];
 
+// ===============================
+// 🔌 تحميل البيانات من Google Sheets
+// ===============================
 async function تحميل_البيانات() {
-  const res = await fetch(API_URL);
-  const data = await res.json();
 
-  بيانات_المركبات = data.fleet;
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-  تحميل_القائمة();
+    بيانات_المركبات = data.fleet || [];
+    بيانات_الزيت = data.oil || [];
+
+    تحميل_القائمة();
+
+  } catch (error) {
+    console.error("خطأ في تحميل البيانات:", error);
+    alert("❌ فشل الاتصال بالنظام");
+  }
 }
 
+// ===============================
+// 📋 تعبئة قائمة المركبات
+// ===============================
 function تحميل_القائمة() {
+
   const القائمة = document.getElementById("قائمة_المركبات");
+  القائمة.innerHTML = "";
+
+  if (بيانات_المركبات.length <= 1) {
+    let خيار = document.createElement("option");
+    خيار.text = "لا توجد مركبات";
+    القائمة.appendChild(خيار);
+    return;
+  }
 
   بيانات_المركبات.slice(1).forEach(صف => {
+
     let خيار = document.createElement("option");
     خيار.value = صف[0];
-    خيار.text = صف[1] + " - " + صف[3];
+    خيار.text = `${صف[1]} - ${صف[3]}`;
+
     القائمة.appendChild(خيار);
   });
 }
 
+// ===============================
+// 🚑 تعبئة بيانات المركبة تلقائياً
+// ===============================
 function تعبئة_المركبة() {
+
   const id = document.getElementById("قائمة_المركبات").value;
 
   const مركبة = بيانات_المركبات.find(m => m[0] == id);
 
-  document.getElementById("رقم_اللوحة").value = مركبة[1];
-  document.getElementById("الحروف").value = مركبة[2];
-  document.getElementById("النوع").value = مركبة[3];
-  document.getElementById("الموديل").value = مركبة[4];
-  document.getElementById("الشاصي").value = مركبة[5];
-  document.getElementById("العداد").value = مركبة[6];
+  if (!مركبة) return;
+
+  document.getElementById("رقم_اللوحة").value = مركبة[1] || "";
+  document.getElementById("الحروف").value = مركبة[2] || "";
+  document.getElementById("النوع").value = مركبة[3] || "";
+  document.getElementById("الموديل").value = مركبة[4] || "";
+  document.getElementById("الشاصي").value = مركبة[5] || "";
+  document.getElementById("العداد").value = مركبة[6] || "";
+
+  عرض_الزيت(id, مركبة[6]);
 }
 
+// ===============================
+// 🔍 البحث عن مركبة
+// ===============================
+function بحث_مركبة(قيمة) {
+
+  const القائمة = document.getElementById("قائمة_المركبات");
+  القائمة.innerHTML = "";
+
+  بيانات_المركبات.slice(1).forEach(صف => {
+
+    if (صف.join(" ").includes(قيمة)) {
+
+      let خيار = document.createElement("option");
+      خيار.value = صف[0];
+      خيار.text = `${صف[1]} - ${صف[3]}`;
+
+      القائمة.appendChild(خيار);
+    }
+  });
+}
+
+// ===============================
+// ⛽ عرض بيانات الزيت
+// ===============================
+function عرض_الزيت(رقم_المركبة, العداد_الحالي) {
+
+  const سجل = بيانات_الزيت.find(o => o[0] == رقم_المركبة);
+
+  if (!سجل) {
+    document.getElementById("آخر_تغيير_زيت").value = "لا يوجد سجل";
+    return;
+  }
+
+  document.getElementById("آخر_تغيير_زيت").value = سجل[1];
+
+  فحص_الزيت(رقم_المركبة, العداد_الحالي, سجل[2]);
+}
+
+// ===============================
+// ⚠️ فحص الزيت (تنبيه ذكي)
+// ===============================
+function فحص_الزيت(رقم_المركبة, العداد_الحالي, عداد_التغيير) {
+
+  const اليوم = new Date();
+  const سجل = بيانات_الزيت.find(o => o[0] == رقم_المركبة);
+
+  if (!سجل) return;
+
+  const تاريخ = new Date(سجل[1]);
+
+  const الأيام = (اليوم - تاريخ) / (1000 * 60 * 60 * 24);
+  const فرق_العداد = العداد_الحالي - عداد_التغيير;
+
+  // ⚠️ تنبيه مبكر
+  if (الأيام >= 25 || فرق_العداد >= 4500) {
+    console.warn("تنبيه: اقترب موعد تغيير الزيت");
+    alert("⚠️ تنبيه: اقترب موعد تغيير الزيت");
+  }
+
+  // 🚨 تنبيه حرج
+  if (الأيام >= 30 || فرق_العداد >= 5000) {
+    console.error("تأخير: يجب تغيير الزيت فوراً");
+    alert("🚨 تأخير: يجب تغيير الزيت فوراً");
+  }
+}
+
+// ===============================
+// 🚀 تشغيل النظام عند فتح الصفحة
+// ===============================
 window.onload = تحميل_البيانات;
