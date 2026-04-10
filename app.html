@@ -10,34 +10,56 @@
 
 <body>
 
+<!-- 🧭 القائمة -->
 <div class="sidebar">
   <h3>🚑 النظام</h3>
   <a href="dashboard.html">📊 لوحة القائد</a>
   <button onclick="logout()">تسجيل خروج</button>
 </div>
 
+<!-- 🧑‍✈️ المحتوى -->
 <div class="main">
 
 <h1>🚑 تشغيل الأسطول</h1>
 
-<input type="text" placeholder="بحث" onkeyup="بحث_مركبة(this.value)">
+<label for="search">بحث</label>
+<input id="search" name="search" placeholder="بحث" onkeyup="بحث_مركبة(this.value)">
+
+<label for="قائمة_المركبات">المركبات</label>
 <select id="قائمة_المركبات" onchange="تعبئة_المركبة()"></select>
 
 <hr>
 
-<input id="رقم_اللوحة">
-<input id="الحروف">
-<input id="النوع">
-<input id="الموديل">
-<input id="الشاصي">
-<input id="العداد">
-<input id="آخر_تغيير_زيت" readonly>
+<label for="رقم_اللوحة">رقم اللوحة</label>
+<input id="رقم_اللوحة" name="رقم_اللوحة">
+
+<label for="الحروف">الحروف</label>
+<input id="الحروف" name="الحروف">
+
+<label for="النوع">النوع</label>
+<input id="النوع" name="النوع">
+
+<label for="الموديل">الموديل</label>
+<input id="الموديل" name="الموديل">
+
+<label for="الشاصي">الشاصي</label>
+<input id="الشاصي" name="الشاصي">
+
+<label for="العداد">العداد</label>
+<input id="العداد" name="العداد">
+
+<label for="آخر_تغيير_زيت">آخر تغيير زيت</label>
+<input id="آخر_تغيير_زيت" name="آخر_تغيير_زيت" readonly>
 
 <hr>
 
 <h3>🛠️ إضافة صيانة</h3>
-<input id="رقم_المركبة_صيانة">
-<input id="نوع_الصيانة">
+
+<label for="رقم_المركبة_صيانة">رقم المركبة</label>
+<input id="رقم_المركبة_صيانة" name="رقم_المركبة_صيانة">
+
+<label for="نوع_الصيانة">نوع الصيانة</label>
+<input id="نوع_الصيانة" name="نوع_الصيانة">
 
 <button id="btnMaintenance" onclick="حفظ_صيانة()">💾 حفظ</button>
 
@@ -47,30 +69,42 @@
 
 <script>
 
-// 🔐 الصلاحيات
-const الصلاحيات = (localStorage.getItem("roles") || "").split(",");
+// 🚀 تشغيل بعد تحميل الصفحة
+window.onload = function() {
 
-// منع الدخول
-if (!الصلاحيات.includes("الأسطول") && !الصلاحيات.includes("مدير") && !الصلاحيات.includes("مشرف")) {
-  location.href = "index.html";
-}
+  // 🔐 الصلاحيات
+  const الصلاحيات = (localStorage.getItem("roles") || "").split(",");
 
-// إخفاء زر الصيانة
-if (!الصلاحيات.includes("الصيانة") && !الصلاحيات.includes("مدير")) {
-  document.getElementById("btnMaintenance").style.display = "none";
-}
+  // ❌ منع الدخول
+  if (
+    !الصلاحيات.includes("الأسطول") &&
+    !الصلاحيات.includes("مدير") &&
+    !الصلاحيات.includes("مشرف")
+  ) {
+    location.href = "index.html";
+    return;
+  }
+
+  // 🔒 إخفاء زر الصيانة
+  if (!الصلاحيات.includes("الصيانة") && !الصلاحيات.includes("مدير")) {
+    document.getElementById("btnMaintenance").style.display = "none";
+  }
+
+  تحميل_البيانات();
+};
 
 // البيانات
 let بيانات_المركبات = [];
 let بيانات_الزيت = [];
 
-// تحميل
+// تحميل البيانات
 function تحميل_البيانات() {
   const s = document.createElement("script");
   s.src = API_URL + "?callback=استلام_بيانات";
   document.body.appendChild(s);
 }
 
+// استلام
 function استلام_بيانات(data) {
   بيانات_المركبات = data.fleet || [];
   بيانات_الزيت = data.oil || [];
@@ -105,8 +139,25 @@ function تعبئة_المركبة() {
   document.getElementById("العداد").value = m[6];
 }
 
+// بحث
+function بحث_مركبة(v) {
+  let list = document.getElementById("قائمة_المركبات");
+  list.innerHTML = "";
+
+  بيانات_المركبات.slice(1).forEach(r => {
+    if (r.join(" ").includes(v)) {
+      let o = document.createElement("option");
+      o.value = r[0];
+      o.text = r[1] + " - " + r[3];
+      list.appendChild(o);
+    }
+  });
+}
+
 // حفظ صيانة
 function حفظ_صيانة() {
+
+  const الصلاحيات = (localStorage.getItem("roles") || "").split(",");
 
   if (!الصلاحيات.includes("الصيانة") && !الصلاحيات.includes("مدير")) {
     alert("❌ لا تملك صلاحية");
@@ -133,8 +184,6 @@ function logout() {
   localStorage.clear();
   location.href = "index.html";
 }
-
-window.onload = تحميل_البيانات;
 
 </script>
 
