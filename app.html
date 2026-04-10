@@ -56,10 +56,11 @@
 <script>
 
 // 🔐 حماية (تم التعديل)
-if (localStorage.getItem("role") !== "operator") {
+const role = localStorage.getItem("role");
+
+if (role !== "operator" && role !== "admin") {
   location.href = "index.html";
 }
-
 // 🧠 متغيرات
 let بيانات_المركبات = [];
 let بيانات_الزيت = [];
