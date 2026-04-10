@@ -4,35 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة القائد</title>
+
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
 
 <style>
-/* نافذة المستخدمين */
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 999;
-  right: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
+  display:none;
+  position:fixed;
+  z-index:999;
+  right:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
 }
 
 .modal-content {
-  background: #0b1f33;
-  margin: 5% auto;
-  padding: 20px;
-  width: 80%;
-  border-radius: 10px;
-  color: white;
+  background:#0b1f33;
+  margin:5% auto;
+  padding:20px;
+  width:80%;
+  border-radius:10px;
 }
 
 .close {
-  float: left;
-  cursor: pointer;
-  font-size: 20px;
+  float:left;
+  cursor:pointer;
 }
 </style>
 
@@ -50,223 +48,240 @@
 
 <h1>📊 غرفة عمليات الأسطول</h1>
 
-<!-- 👇 زر إدارة المستخدمين -->
 <button id="btnUsers" onclick="فتح_المستخدمين()">👥 إدارة المستخدمين</button>
 
 <div class="cards">
-  <div class="card">🚑 إجمالي المركبات: <span id="fleet"></span></div>
+  <div class="card">🚑 المركبات: <span id="fleet"></span></div>
   <div class="card">🟢 الجاهزة: <span id="ready"></span></div>
-  <div class="card">🛠️ خارج الخدمة: <span id="maintenance"></span></div>
+  <div class="card">🛠️ الصيانة: <span id="maintenance"></span></div>
   <div class="card">🚨 الحوادث: <span id="accidents"></span></div>
 </div>
 
 <hr>
 
-<h2>⚠️ التنبيهات الهامة</h2>
+<h2>⚠️ التنبيهات</h2>
 <div id="alertsBox"></div>
+
+<hr>
+
+<h2>📊 التقارير</h2>
+
+<select id="نوع_التقرير">
+  <option value="شهري">شهري</option>
+  <option value="ربع">ربع سنوي</option>
+  <option value="سنوي">سنوي</option>
+  <option value="مركبة">مركبة</option>
+</select>
+
+<select id="مركبة_تقرير"></select>
+
+<button onclick="تقرير()">📄 عرض</button>
+<button onclick="طباعة_التقرير_الرسمي()">📄 PDF رسمي</button>
+
+<div id="reportBox"></div>
 
 </div>
 
-<!-- 👇 نافذة المستخدمين -->
+<!-- نافذة المستخدمين -->
 <div id="usersModal" class="modal">
+<div class="modal-content">
 
-  <div class="modal-content">
+<span onclick="اغلاق_المستخدمين()" class="close">✖</span>
 
-    <span onclick="اغلاق_المستخدمين()" class="close">✖</span>
+<h2>👥 المستخدمين</h2>
 
-    <h2>👥 إدارة المستخدمين</h2>
+<table id="usersTable"></table>
 
-    <table id="usersTable" border="1" width="100%">
-      <tr>
-        <th>اسم المستخدم</th>
-        <th>الصلاحية</th>
-        <th>حذف</th>
-      </tr>
-    </table>
+<input id="newUser" placeholder="اسم المستخدم">
+<input id="newPass" placeholder="كلمة المرور">
 
-    <hr>
+<select id="newRole">
+<option>مدير</option>
+<option>مشرف</option>
+<option>الأسطول</option>
+<option>الصيانة</option>
+<option>الحوادث</option>
+</select>
 
-    <h3>➕ إضافة مستخدم</h3>
+<button onclick="إضافة_مستخدم()">إضافة</button>
 
-    <input id="newUser" placeholder="اسم المستخدم">
-    <input id="newPass" placeholder="كلمة المرور">
-
-    <select id="newRole">
-      <option>مدير</option>
-      <option>مشرف</option>
-      <option>الأسطول</option>
-      <option>الصيانة</option>
-      <option>الحوادث</option>
-    </select>
-
-    <button onclick="إضافة_مستخدم()">➕ إضافة</button>
-
-  </div>
+</div>
 </div>
 
 <script src="config.js"></script>
 
 <script>
 
-window.onload = function() {
+let DATA={};
 
-  const roles = (localStorage.getItem("roles") || "").split(",");
+window.onload=function(){
 
-  if (!roles.includes("مدير") && !roles.includes("مشرف")) {
-    alert("❌ غير مصرح");
-    location.href = "index.html";
-    return;
-  }
+let roles=(localStorage.getItem("roles")||"").split(",");
 
-  // إخفاء زر المستخدمين لغير المدير
-  if (!roles.includes("مدير")) {
-    document.getElementById("btnUsers").style.display = "none";
-  }
+if(!roles.includes("مدير")&&!roles.includes("مشرف")){
+location.href="index.html";return;
+}
 
-  تحديث();
+if(!roles.includes("مدير")){
+btnUsers.style.display="none";
+}
+
+تحديث();
 };
 
-// 🔄 تحديث البيانات
-function تحديث() {
-  const s = document.createElement("script");
-  s.src = API_URL + "?callback=عرض";
-  document.body.appendChild(s);
+function تحديث(){
+let s=document.createElement("script");
+s.src=API_URL+"?callback=عرض";
+document.body.appendChild(s);
 }
 
-// 📊 عرض البيانات
-function عرض(data) {
+function عرض(data){
 
-  let fleet = data.fleet.length - 1;
-  let maintenance = data.maintenance.length - 1;
-  let accidents = data.accidents.length - 1;
+DATA=data;
 
-  let ready = fleet - maintenance - accidents;
+let fleet=data.fleet.length-1;
+let maintenance=data.maintenance.length-1;
+let accidents=data.accidents.length-1;
 
-  document.getElementById("fleet").innerText = fleet;
-  document.getElementById("ready").innerText = ready;
-  document.getElementById("maintenance").innerText = maintenance;
-  document.getElementById("accidents").innerText = accidents;
+let ready=fleet-maintenance-accidents;
 
-  تحليل_التنبيهات(data);
-  عرض_المستخدمين(data);
+fleetEl.innerText=fleet;
+maintenanceEl.innerText=maintenance;
+accidentsEl.innerText=accidents;
+readyEl.innerText=ready;
+
+تحميل_المركبات(data);
+تحليل_التنبيهات(data);
+عرض_المستخدمين(data);
 }
 
-// ⚠️ تحليل التنبيهات
-function تحليل_التنبيهات(data) {
+// تنبيهات
+function تحليل_التنبيهات(data){
 
-  let alerts = [];
-  let oil = data.oil || [];
-  let maintenance = data.maintenance || [];
+let alerts=[];
 
-  oil.slice(1).forEach(o => {
-    let diff = (new Date() - new Date(o[1])) / (1000*60*60*24);
-    if (diff > 25) {
-      alerts.push("⛽ قرب تغيير زيت للمركبة رقم " + o[0]);
-    }
-  });
+data.oil.slice(1).forEach(o=>{
+let d=(new Date()-new Date(o[1]))/86400000;
+if(d>25)alerts.push("⛽ زيت قريب "+o[0]);
+});
 
-  let مشاكل = {};
-  maintenance.slice(1).forEach(m => {
-    let نوع = m[2];
-    مشاكل[نوع] = (مشاكل[نوع] || 0) + 1;
+let count={};
+data.maintenance.slice(1).forEach(m=>{
+count[m[2]]=(count[m[2]]||0)+1;
+if(count[m[2]]>=3)alerts.push("⚠️ تكرار "+m[2]);
+});
 
-    if (مشاكل[نوع] >= 3) {
-      alerts.push("⚠️ تكرار عطل: " + نوع);
-    }
-  });
-
-  let box = document.getElementById("alertsBox");
-  box.innerHTML = alerts.length ? "" : "✅ لا توجد تنبيهات";
-
-  alerts.forEach(a => {
-    let div = document.createElement("div");
-    div.className = "alert";
-    div.innerText = a;
-    box.appendChild(div);
-  });
+alertsBox.innerHTML=alerts.join("<br>")||"لا يوجد";
 }
 
-// 👥 عرض المستخدمين
-function عرض_المستخدمين(data) {
+// تحميل مركبات
+function تحميل_المركبات(data){
 
-  let table = document.getElementById("usersTable");
+let list=مركبة_تقرير;
+list.innerHTML="";
 
-  table.innerHTML = `
-    <tr>
-      <th>اسم المستخدم</th>
-      <th>الصلاحية</th>
-      <th>حذف</th>
-    </tr>
-  `;
-
-  (data.users || []).slice(1).forEach((u, i) => {
-
-    let row = table.insertRow();
-
-    row.innerHTML = `
-      <td>${u[0]}</td>
-      <td>${u[2]}</td>
-      <td><button onclick="حذف_مستخدم(${i+2})">🗑️</button></td>
-    `;
-  });
+data.fleet.slice(1).forEach(r=>{
+let o=document.createElement("option");
+o.value=r[0];
+o.text=r[1];
+list.appendChild(o);
+});
 }
 
-// 👥 فتح النافذة
-function فتح_المستخدمين() {
-  document.getElementById("usersModal").style.display = "block";
+// التقارير
+function تقرير(){
+
+let type=نوع_التقرير.value;
+let car=مركبة_تقرير.value;
+
+let maint=DATA.maintenance;
+let acc=DATA.accidents;
+
+if(type==="مركبة"){
+let m=maint.filter(x=>x[0]==car).length;
+let a=acc.filter(x=>x[0]==car).length;
+
+reportBox.innerHTML=`🚑 ${car}<br>صيانة:${m}<br>حوادث:${a}`;
+}
+else{
+let days=type==="شهري"?30:type==="ربع"?90:365;
+
+let m=maint.filter(x=>(new Date()-new Date(x[1]))/86400000<=days).length;
+let a=acc.filter(x=>(new Date()-new Date(x[1]))/86400000<=days).length;
+
+reportBox.innerHTML=`📊 ${type}<br>صيانة:${m}<br>حوادث:${a}`;
+}
 }
 
-// ❌ إغلاق
-function اغلاق_المستخدمين() {
-  document.getElementById("usersModal").style.display = "none";
+// PDF
+function طباعة_التقرير_الرسمي(){
+
+let content=reportBox.innerHTML;
+
+let w=window.open('');
+
+w.document.write(`
+<html dir="rtl">
+<head>
+<style>
+body{font-family:Cairo;padding:40px}
+h1{text-align:center}
+</style>
+</head>
+<body>
+
+<h1>هيئة الهلال الأحمر السعودي</h1>
+<h2 style="text-align:center">تقرير الأسطول</h2>
+
+${content}
+
+</body>
+</html>
+`);
+
+w.print();
 }
 
-// ➕ إضافة
-function إضافة_مستخدم() {
+// المستخدمين
+function عرض_المستخدمين(data){
 
-  const url = API_URL
-    + "?action=addUser"
-    + "&user=" + encodeURIComponent(newUser.value)
-    + "&pass=" + encodeURIComponent(newPass.value)
-    + "&role=" + encodeURIComponent(newRole.value)
-    + "&callback=done";
+usersTable.innerHTML="";
 
-  const s = document.createElement("script");
-  s.src = url;
-  document.body.appendChild(s);
+data.users.slice(1).forEach((u,i)=>{
+let r=usersTable.insertRow();
+r.innerHTML=`<td>${u[0]}</td><td>${u[2]}</td><td><button onclick="حذف_مستخدم(${i+2})">🗑️</button></td>`;
+});
 }
 
-// 🗑️ حذف
-function حذف_مستخدم(row) {
+function فتح_المستخدمين(){usersModal.style.display="block";}
+function اغلاق_المستخدمين(){usersModal.style.display="none";}
 
-  const url = API_URL
-    + "?action=deleteUser"
-    + "&row=" + row
-    + "&callback=deleted";
+function إضافة_مستخدم(){
 
-  const s = document.createElement("script");
-  s.src = url;
-  document.body.appendChild(s);
+let url=API_URL+"?action=addUser&user="+newUser.value+"&pass="+newPass.value+"&role="+newRole.value+"&callback=ok";
+
+let s=document.createElement("script");
+s.src=url;
+document.body.appendChild(s);
 }
 
-// callbacks
-function done() {
-  alert("✅ تمت الإضافة");
-  تحديث();
+function حذف_مستخدم(row){
+
+let url=API_URL+"?action=deleteUser&row="+row+"&callback=ok";
+
+let s=document.createElement("script");
+s.src=url;
+document.body.appendChild(s);
 }
 
-function deleted() {
-  alert("🗑️ تم الحذف");
-  تحديث();
+function ok(){تحديث();}
+
+function logout(){
+localStorage.clear();
+location.href="index.html";
 }
 
-// خروج
-function logout() {
-  localStorage.clear();
-  location.href = "index.html";
-}
-
-setInterval(تحديث, 5000);
+setInterval(تحديث,5000);
 
 </script>
 
