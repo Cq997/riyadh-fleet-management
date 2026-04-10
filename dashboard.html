@@ -6,6 +6,36 @@
 <title>لوحة القائد</title>
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+
+<style>
+/* نافذة المستخدمين */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+  background: #0b1f33;
+  margin: 5% auto;
+  padding: 20px;
+  width: 80%;
+  border-radius: 10px;
+  color: white;
+}
+
+.close {
+  float: left;
+  cursor: pointer;
+  font-size: 20px;
+}
+</style>
+
 </head>
 
 <body>
@@ -20,6 +50,9 @@
 
 <h1>📊 غرفة عمليات الأسطول</h1>
 
+<!-- 👇 زر إدارة المستخدمين -->
+<button id="btnUsers" onclick="فتح_المستخدمين()">👥 إدارة المستخدمين</button>
+
 <div class="cards">
   <div class="card">🚑 إجمالي المركبات: <span id="fleet"></span></div>
   <div class="card">🟢 الجاهزة: <span id="ready"></span></div>
@@ -32,6 +65,43 @@
 <h2>⚠️ التنبيهات الهامة</h2>
 <div id="alertsBox"></div>
 
+</div>
+
+<!-- 👇 نافذة المستخدمين -->
+<div id="usersModal" class="modal">
+
+  <div class="modal-content">
+
+    <span onclick="اغلاق_المستخدمين()" class="close">✖</span>
+
+    <h2>👥 إدارة المستخدمين</h2>
+
+    <table id="usersTable" border="1" width="100%">
+      <tr>
+        <th>اسم المستخدم</th>
+        <th>الصلاحية</th>
+        <th>حذف</th>
+      </tr>
+    </table>
+
+    <hr>
+
+    <h3>➕ إضافة مستخدم</h3>
+
+    <input id="newUser" placeholder="اسم المستخدم">
+    <input id="newPass" placeholder="كلمة المرور">
+
+    <select id="newRole">
+      <option>مدير</option>
+      <option>مشرف</option>
+      <option>الأسطول</option>
+      <option>الصيانة</option>
+      <option>الحوادث</option>
+    </select>
+
+    <button onclick="إضافة_مستخدم()">➕ إضافة</button>
+
+  </div>
 </div>
 
 <script src="config.js"></script>
@@ -48,15 +118,22 @@ window.onload = function() {
     return;
   }
 
+  // إخفاء زر المستخدمين لغير المدير
+  if (!roles.includes("مدير")) {
+    document.getElementById("btnUsers").style.display = "none";
+  }
+
   تحديث();
 };
 
+// 🔄 تحديث البيانات
 function تحديث() {
   const s = document.createElement("script");
   s.src = API_URL + "?callback=عرض";
   document.body.appendChild(s);
 }
 
+// 📊 عرض البيانات
 function عرض(data) {
 
   let fleet = data.fleet.length - 1;
@@ -71,58 +148,35 @@ function عرض(data) {
   document.getElementById("accidents").innerText = accidents;
 
   تحليل_التنبيهات(data);
+  عرض_المستخدمين(data);
 }
 
-// 🔥 تحليل التنبيهات
+// ⚠️ تحليل التنبيهات
 function تحليل_التنبيهات(data) {
 
   let alerts = [];
-
   let oil = data.oil || [];
   let maintenance = data.maintenance || [];
 
-  // ⛽ تنبيه الزيت (30 يوم)
   oil.slice(1).forEach(o => {
-
-    let lastDate = new Date(o[1]);
-    let today = new Date();
-
-    let diffDays = (today - lastDate) / (1000 * 60 * 60 * 24);
-
-    if (diffDays > 25) {
+    let diff = (new Date() - new Date(o[1])) / (1000*60*60*24);
+    if (diff > 25) {
       alerts.push("⛽ قرب تغيير زيت للمركبة رقم " + o[0]);
     }
   });
 
-  // ❄️ الأعطال المتكررة (مثال المكيف)
   let مشاكل = {};
-
   maintenance.slice(1).forEach(m => {
-
     let نوع = m[2];
-
-    if (!مشاكل[نوع]) مشاكل[نوع] = 0;
-
-    مشاكل[نوع]++;
+    مشاكل[نوع] = (مشاكل[نوع] || 0) + 1;
 
     if (مشاكل[نوع] >= 3) {
       alerts.push("⚠️ تكرار عطل: " + نوع);
     }
   });
 
-  عرض_التنبيهات(alerts);
-}
-
-// عرض التنبيهات
-function عرض_التنبيهات(alerts) {
-
   let box = document.getElementById("alertsBox");
-  box.innerHTML = "";
-
-  if (alerts.length === 0) {
-    box.innerHTML = "✅ لا توجد تنبيهات";
-    return;
-  }
+  box.innerHTML = alerts.length ? "" : "✅ لا توجد تنبيهات";
 
   alerts.forEach(a => {
     let div = document.createElement("div");
@@ -130,6 +184,80 @@ function عرض_التنبيهات(alerts) {
     div.innerText = a;
     box.appendChild(div);
   });
+}
+
+// 👥 عرض المستخدمين
+function عرض_المستخدمين(data) {
+
+  let table = document.getElementById("usersTable");
+
+  table.innerHTML = `
+    <tr>
+      <th>اسم المستخدم</th>
+      <th>الصلاحية</th>
+      <th>حذف</th>
+    </tr>
+  `;
+
+  (data.users || []).slice(1).forEach((u, i) => {
+
+    let row = table.insertRow();
+
+    row.innerHTML = `
+      <td>${u[0]}</td>
+      <td>${u[2]}</td>
+      <td><button onclick="حذف_مستخدم(${i+2})">🗑️</button></td>
+    `;
+  });
+}
+
+// 👥 فتح النافذة
+function فتح_المستخدمين() {
+  document.getElementById("usersModal").style.display = "block";
+}
+
+// ❌ إغلاق
+function اغلاق_المستخدمين() {
+  document.getElementById("usersModal").style.display = "none";
+}
+
+// ➕ إضافة
+function إضافة_مستخدم() {
+
+  const url = API_URL
+    + "?action=addUser"
+    + "&user=" + encodeURIComponent(newUser.value)
+    + "&pass=" + encodeURIComponent(newPass.value)
+    + "&role=" + encodeURIComponent(newRole.value)
+    + "&callback=done";
+
+  const s = document.createElement("script");
+  s.src = url;
+  document.body.appendChild(s);
+}
+
+// 🗑️ حذف
+function حذف_مستخدم(row) {
+
+  const url = API_URL
+    + "?action=deleteUser"
+    + "&row=" + row
+    + "&callback=deleted";
+
+  const s = document.createElement("script");
+  s.src = url;
+  document.body.appendChild(s);
+}
+
+// callbacks
+function done() {
+  alert("✅ تمت الإضافة");
+  تحديث();
+}
+
+function deleted() {
+  alert("🗑️ تم الحذف");
+  تحديث();
 }
 
 // خروج
