@@ -5,24 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة القائد</title>
 <link rel="stylesheet" href="css/style.css">
-<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<!-- 🧭 القائمة -->
 <div class="sidebar">
   <h3>📊 لوحة القائد</h3>
-  <a href="app.html">🚑 النظام</a>
-  <button onclick="logout()">تسجيل خروج</button>
+  <a href="app.html">النظام</a>
+  <button onclick="logout()">خروج</button>
 </div>
 
-<!-- 🧑‍✈️ المحتوى -->
 <div class="main">
 
 <h1>📊 لوحة القيادة</h1>
 
-<!-- 📊 المؤشرات -->
 <div class="cards">
   <div class="card">🚑 المركبات: <span id="fleet"></span></div>
   <div class="card">🛠️ الصيانة: <span id="maintenance"></span></div>
@@ -31,134 +27,74 @@
 
 <hr>
 
-<!-- 👥 إدارة المستخدمين -->
-<h2>👥 إدارة المستخدمين</h2>
+<h2>👥 المستخدمين</h2>
 
-<table border="1" width="100%" id="usersTable">
-  <tr>
-    <th>اسم المستخدم</th>
-    <th>الصلاحية</th>
-    <th>حذف</th>
-  </tr>
-</table>
-
-<hr>
+<table id="usersTable"></table>
 
 <h3>➕ إضافة مستخدم</h3>
-
-<input id="newUser" placeholder="اسم المستخدم">
-<input id="newPass" placeholder="كلمة المرور">
-
+<input id="newUser">
+<input id="newPass">
 <select id="newRole">
-  <option value="operator">operator</option>
-  <option value="admin">admin</option>
+  <option>مدير</option>
+  <option>مشرف</option>
+  <option>الأسطول</option>
+  <option>الصيانة</option>
+  <option>الحوادث</option>
 </select>
 
-<button onclick="إضافة_مستخدم()">➕ إضافة</button>
+<button onclick="إضافة_مستخدم()">إضافة</button>
 
 </div>
 
-<!-- 🔌 الربط -->
 <script src="config.js"></script>
 
 <script>
 
-// 🔐 حماية (أدمن فقط)
-const role = localStorage.getItem("role");
-
-if (role !== "admin") {
-  alert("❌ غير مصرح");
-  location.href = "index.html";
-}
-
-// 🔄 تحميل البيانات JSONP
 function تحديث() {
   const s = document.createElement("script");
   s.src = API_URL + "?callback=عرض";
   document.body.appendChild(s);
 }
 
-// 📊 عرض البيانات
 function عرض(data) {
 
-  // المؤشرات
   document.getElementById("fleet").innerText = data.fleet.length - 1;
   document.getElementById("maintenance").innerText = data.maintenance.length - 1;
   document.getElementById("accidents").innerText = data.accidents.length - 1;
 
-  // المستخدمين
-  عرض_المستخدمين(data);
-}
-
-// 👥 عرض المستخدمين
-function عرض_المستخدمين(data) {
-
   let table = document.getElementById("usersTable");
+  table.innerHTML = "";
 
-  // تنظيف الجدول
-  table.innerHTML = `
-    <tr>
-      <th>اسم المستخدم</th>
-      <th>الصلاحية</th>
-      <th>حذف</th>
-    </tr>
-  `;
-
-  let users = data.users || [];
-
-  users.slice(1).forEach((u, i) => {
-
+  (data.users || []).slice(1).forEach(u => {
     let row = table.insertRow();
-
-    row.innerHTML = `
-      <td>${u[0]}</td>
-      <td>${u[2]}</td>
-      <td><button onclick="حذف_مستخدم(${i+2})">🗑️</button></td>
-    `;
+    row.innerHTML = `<td>${u[0]}</td><td>${u[2]}</td>`;
   });
 }
 
-// ➕ إضافة مستخدم
 function إضافة_مستخدم() {
 
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      sheet: "المستخدمين",
-      values: [
-        document.getElementById("newUser").value,
-        document.getElementById("newPass").value,
-        document.getElementById("newRole").value
-      ]
-    })
-  });
+  const url = API_URL
+    + "?action=addUser"
+    + "&user=" + newUser.value
+    + "&pass=" + newPass.value
+    + "&role=" + newRole.value
+    + "&callback=done";
 
-  alert("✅ تم إضافة المستخدم");
+  const s = document.createElement("script");
+  s.src = url;
+  document.body.appendChild(s);
+}
+
+function done() {
+  alert("تمت الإضافة");
   تحديث();
 }
 
-// 🗑️ حذف مستخدم
-function حذف_مستخدم(row) {
-
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "deleteUser",
-      row: row
-    })
-  });
-
-  alert("🗑️ تم حذف المستخدم");
-  تحديث();
-}
-
-// 🚪 تسجيل خروج
 function logout() {
   localStorage.clear();
   location.href = "index.html";
 }
 
-// 🔄 تحديث تلقائي
 setInterval(تحديث, 5000);
 تحديث();
 
