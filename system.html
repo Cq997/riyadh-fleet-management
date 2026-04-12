@@ -2,98 +2,77 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>غرفة عمليات الأسطول</title>
-
+<title>نظام الأسطول</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
 
 <style>
 body{font-family:Cairo;background:#0b1e2d;color:white;margin:0}
-.sidebar{width:240px;height:100vh;position:fixed;background:#091520;padding:20px}
-.sidebar button{width:100%;margin:8px 0;padding:10px;background:#122b40;border:none;color:white;border-radius:6px}
-.main{margin-right:260px;padding:20px}
+.sidebar{width:230px;position:fixed;height:100%;background:#091520;padding:20px}
+.sidebar button{width:100%;margin:8px 0;padding:10px;background:#122b40;color:white;border:none}
+.main{margin-right:250px;padding:20px}
 .page{display:none}
 input,select{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none}
-.action{background:#ff3b3b;color:white;padding:10px;border:none;border-radius:6px;width:100%}
-.cards{display:flex;flex-wrap:wrap}
-.card{background:#122b40;padding:15px;margin:10px;border-radius:10px;flex:1;min-width:180px;text-align:center}
-.footer{text-align:center;margin-top:30px;opacity:0.7}
+button{background:red;color:white;padding:10px;border:none;width:100%}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-<h2>🚑 الأسطول</h2>
-
-<button onclick="show('dashboard')">📊 لوحة القائد</button>
 <button onclick="show('tracking')">📍 الرصد</button>
 <button onclick="show('accidents')">🚨 الحوادث</button>
 <button onclick="show('maintenance')">🛠️ الصيانة</button>
 <button onclick="show('oil')">⛽ الزيت</button>
-
 </div>
 
 <div class="main">
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="page">
-<h2>📊 لوحة القائد</h2>
-
-<div class="cards">
-<div class="card">🚑 المركبات <br><span id="fleet"></span></div>
-<div class="card">🟢 الجاهزة <br><span id="ready"></span></div>
-<div class="card">🛠️ الصيانة <br><span id="maintenance"></span></div>
-<div class="card">🚨 الحوادث <br><span id="accidents"></span></div>
-</div>
-
-<h3>⚠️ التنبيهات</h3>
-<div id="alerts"></div>
-
-</div>
-
-<!-- TRACKING -->
+<!-- ================= الرصد ================= -->
 <div id="tracking" class="page">
+
 <h2>📍 الرصد</h2>
 
-<select id="fleetList" onchange="fillCar()"></select>
-<input id="car_type" readonly placeholder="النوع">
-<input id="car_model" readonly placeholder="الموديل">
+<select id="t_car" onchange="fillCar()"></select>
 
-<select id="sector" onchange="loadCenters()"></select>
+<input id="type" placeholder="النوع" readonly>
+<input id="model" placeholder="الموديل" readonly>
+
+<select id="sector"></select>
 <select id="center"></select>
 
-<input id="location" placeholder="الموقع">
+<input id="location" placeholder="موقع المركبة">
 
 <select id="status">
 <option>عاملة</option>
 <option>خارج الخدمة</option>
 </select>
 
-<button class="action" onclick="saveTracking()">حفظ</button>
+<button onclick="saveTracking()">حفظ</button>
+
 </div>
 
-<!-- ACCIDENTS -->
+<!-- ================= الحوادث ================= -->
 <div id="accidents" class="page">
+
 <h2>🚨 الحوادث</h2>
+
+<input id="date" type="date">
+<input id="time" type="time">
 
 <select id="a_car"></select>
 
-<input id="a_reason" placeholder="سبب الحادث">
-<input id="a_location" placeholder="الموقع">
+<input id="reason" placeholder="سبب الحادث">
+<input id="a_location" placeholder="موقع الحادث">
 
 <select id="a_status">
 <option>عاملة</option>
 <option>خارج الخدمة</option>
 </select>
 
-<select id="done">
-<option>منجز</option>
-<option>غير منجز</option>
-</select>
+<select id="a_sector"></select>
 
 <input id="percent" placeholder="نسبة الخطأ">
-<input id="najm" placeholder="رقم نجم">
+<input id="caseNumber" placeholder="رقم الحادث">
 
 <select id="report">
 <option>نجم</option>
@@ -101,17 +80,26 @@ input,select{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none}
 <option>الشرطة</option>
 </select>
 
-<button class="action" onclick="saveAccident()">حفظ</button>
+<select id="done">
+<option>منجز</option>
+<option>غير منجز</option>
+</select>
+
+<button onclick="saveAccident()">حفظ</button>
+
 </div>
 
-<!-- MAINTENANCE -->
+<!-- ================= الصيانة ================= -->
 <div id="maintenance" class="page">
+
 <h2>🛠️ الصيانة</h2>
+
+<input type="date" id="m_date">
 
 <select id="m_car" onchange="fillMaintenance()"></select>
 
-<input id="m_type" readonly>
-<input id="m_model" readonly>
+<input id="m_type" readonly placeholder="النوع">
+<input id="m_model" readonly placeholder="الموديل">
 
 <select id="level">
 <option>خفيف</option>
@@ -128,24 +116,27 @@ input,select{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none}
 <option>غير منجز</option>
 </select>
 
-<button class="action" onclick="saveMaintenance()">حفظ</button>
+<button onclick="saveMaintenance()">حفظ</button>
+
 </div>
 
-<!-- OIL -->
+<!-- ================= الزيت ================= -->
 <div id="oil" class="page">
+
 <h2>⛽ تغيير الزيت</h2>
 
-<select id="o_car"></select>
+<select id="o_car" onchange="fillOil()"></select>
+
+<input id="o_type" readonly>
+<input id="o_model" readonly>
 
 <input id="km" placeholder="العداد">
 <input id="request" placeholder="رقم الطلب">
 
-<button class="action" onclick="saveOil()">حفظ</button>
-</div>
+<input type="date" id="o_date">
 
-<div class="footer">
-منصة صيانة وتشغيل الأسطول بمنطقة الرياض<br>
-تحت إشراف ثامر عياد الحربي
+<button onclick="saveOil()">حفظ</button>
+
 </div>
 
 </div>
@@ -153,18 +144,6 @@ input,select{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none}
 <script>
 
 const API_URL="https://script.google.com/macros/s/AKfycbxg4mpufv38fxvaSM2jxvcLUwWed4hJSTjjMCt7zT4AYG1fZTwqsrEjaeHDVBvfDrghAg/exec";
-
-const SECTORS={
-"قطاع جنوب الرياض":["طريق الخرج","الشفا","الحائر","ديراب","الخالدية","الدار البيضاء","منفوحة","عكاظ","المنصورة","الاسكان"],
-"قطاع شمال الرياض":["جامعة الاميرة نورة","الامانة","الرمال","الملقا","النفل","المونسية","البيان","النرجس","الصحافة"],
-"قطاع شرق الرياض":["الروضة","النسيم","النسيم الغربي","الجنادرية","الحمراء","السلي","السلام","اشبيليا","السعادة","حي الملك فيصل","الخليج","النهضة","الندوة","النظيم"],
-"قطاع غرب الرياض":["طويق","طويق2","نمار","عليشة","العريجاء","سلطانة","لبن","لبن الغربي","السويدي","القدية المطور","عرقة"],
-"قطاع وسط الرياض":["الضباب","المصيف","الربوة","العروبة","الملز","حي الملك فهد","حي الملك عبدالله","النخيل","السليمانية","الشورى"],
-"محافظة رماح":["الدغم","رماح","حفر العتش","شوية","سعد"],
-"محافظة الأفلاج":["العجلية","الأفلاج"],
-"محافظة الغاط":["الغاط"],
-"محافظة القويعية":["الجلة وتبراك","القويعية","الرويضة","حلبان","الخاصرة"]
-};
 
 let DATA={};
 
@@ -177,57 +156,35 @@ document.body.appendChild(s);
 function init(data){
 DATA=data;
 buildFleet();
-buildAccidentCars();
-buildMaintenanceCars();
-buildOilCars();
-buildSectors();
-updateDashboard();
 }
 
+// ================= المركبات =================
 function buildFleet(){
-fleetList.innerHTML="";
-DATA.fleet.slice(1).forEach(r=>{
-let o=document.createElement("option");
-o.value=r[0];
-o.text=r[1];
-fleetList.appendChild(o);
-});
-}
 
-function buildAccidentCars(){
+t_car.innerHTML="";
 a_car.innerHTML="";
-DATA.fleet.slice(1).forEach(r=>{
-let o=document.createElement("option");
-o.value=r[0];
-o.text=r[1];
-a_car.appendChild(o);
-});
-}
-
-function buildMaintenanceCars(){
 m_car.innerHTML="";
-DATA.fleet.slice(1).forEach(r=>{
-let o=document.createElement("option");
-o.value=r[0];
-o.text=r[1];
-m_car.appendChild(o);
-});
-}
-
-function buildOilCars(){
 o_car.innerHTML="";
+
 DATA.fleet.slice(1).forEach(r=>{
+
 let o=document.createElement("option");
 o.value=r[0];
 o.text=r[1];
-o_car.appendChild(o);
+
+t_car.appendChild(o.cloneNode(true));
+a_car.appendChild(o.cloneNode(true));
+m_car.appendChild(o.cloneNode(true));
+o_car.appendChild(o.cloneNode(true));
+
 });
 }
 
+// ================= تعبئة =================
 function fillCar(){
-let c=DATA.fleet.find(x=>x[0]==fleetList.value);
-car_type.value=c[3];
-car_model.value=c[4];
+let c=DATA.fleet.find(x=>x[0]==t_car.value);
+type.value=c[3];
+model.value=c[4];
 }
 
 function fillMaintenance(){
@@ -236,48 +193,13 @@ m_type.value=c[3];
 m_model.value=c[4];
 }
 
-function buildSectors(){
-sector.innerHTML="";
-Object.keys(SECTORS).forEach(s=>{
-let o=document.createElement("option");
-o.value=s;o.text=s;
-sector.appendChild(o);
-});
-loadCenters();
+function fillOil(){
+let c=DATA.fleet.find(x=>x[0]==o_car.value);
+o_type.value=c[3];
+o_model.value=c[4];
 }
 
-function loadCenters(){
-center.innerHTML="";
-SECTORS[sector.value].forEach(c=>{
-let o=document.createElement("option");
-o.value=c;o.text=c;
-center.appendChild(o);
-});
-}
-
-function updateDashboard(){
-
-let fleetCount=DATA.fleet.length-1;
-let maint=DATA.maintenance.length-1;
-let acc=DATA.accidents.length-1;
-
-let ready=fleetCount-maint-acc;
-
-fleet.innerText=fleetCount;
-maintenance.innerText=maint;
-accidents.innerText=acc;
-ready.innerText=ready;
-
-let alertsArr=[];
-
-DATA.oil.slice(1).forEach(o=>{
-let days=(new Date()-new Date(o[1]))/86400000;
-if(days>30)alertsArr.push("⚠️ تغيير زيت قريب للمركبة "+o[0]);
-});
-
-alerts.innerHTML=alertsArr.join("<br>")||"✅ لا يوجد تنبيهات";
-}
-
+// ================= حفظ =================
 function send(url){
 let s=document.createElement("script");
 s.src=url;
@@ -285,11 +207,11 @@ document.body.appendChild(s);
 }
 
 function saveTracking(){
-send(API_URL+"?action=addTracking&car="+fleetList.value+"&sector="+sector.value+"&center="+center.value+"&location="+location.value+"&status="+status.value+"&callback=ok");
+send(API_URL+"?action=addTracking&car="+t_car.value+"&location="+location.value+"&status="+status.value+"&callback=ok");
 }
 
 function saveAccident(){
-send(API_URL+"?action=addAccident&car="+a_car.value+"&reason="+a_reason.value+"&location="+a_location.value+"&status="+a_status.value+"&done="+done.value+"&callback=ok");
+send(API_URL+"?action=addAccident&car="+a_car.value+"&reason="+reason.value+"&location="+a_location.value+"&status="+a_status.value+"&done="+done.value+"&callback=ok");
 }
 
 function saveMaintenance(){
@@ -300,14 +222,15 @@ function saveOil(){
 send(API_URL+"?action=addOil&car="+o_car.value+"&km="+km.value+"&request="+request.value+"&callback=ok");
 }
 
-function ok(){alert("تم");load();}
+function ok(){alert("تم الحفظ");}
 
+// ================= تنقل =================
 function show(id){
 document.querySelectorAll(".page").forEach(p=>p.style.display="none");
 document.getElementById(id).style.display="block";
 }
 
-show("dashboard");
+show("tracking");
 load();
 
 </script>
